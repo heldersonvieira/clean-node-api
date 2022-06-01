@@ -1,65 +1,69 @@
-const MissingParamError = require('../helpers/missing-param-error');
-const LoginRouter = require('./login-router');
+const MissingParamError = require('../helpers/missing-param-error')
+const LoginRouter = require('./login-router')
 
 const makeSut = () => {
-  class AuthUseCase {
-    auth() {}
+  class AuthUseCaseSpy {
+    auth({ email, password }) {
+      this.email = email
+      this.password = password
+    }
   }
-  const authUseCase = new AuthUseCase();
-  const { sut } = new LoginRouter(authUseCase);
+  const authUseCaseSpy = new AuthUseCaseSpy()
+  const sut = new LoginRouter(authUseCaseSpy)
   return {
     sut,
-    authUseCase,
-  };
-};
+    authUseCaseSpy,
+  }
+}
 
 describe('Login Router', () => {
   test('should return 400 if no email is provided', () => {
-    const { sut } = makeSut();
+    const { sut } = makeSut()
     const httpRequest = {
       body: {
         password: 'any_password',
       },
-    };
-    const httpResponse = sut.route(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError('email'));
-  });
+    }
+    const httpResponse = sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new MissingParamError('email'))
+  })
 
   test('should return 400 if no password is provided', () => {
-    const { sut } = makeSut();
+    const { sut } = makeSut()
     const httpRequest = {
       body: {
         email: 'fake@email.com',
       },
-    };
-    const httpResponse = sut.route(httpRequest);
-    expect(httpResponse.statusCode).toBe(400);
-    expect(httpResponse.body).toEqual(new MissingParamError('password'));
-  });
+    }
+    const httpResponse = sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new MissingParamError('password'))
+  })
 
   test('should return 500 if no httpRequest or body are provided', () => {
-    const { sut } = makeSut();
-    const httpResponse = sut.route();
-    expect(httpResponse.statusCode).toBe(500);
-  });
+    const { sut } = makeSut()
+    const httpResponse = sut.route()
+    expect(httpResponse.statusCode).toBe(500)
+  })
 
   test('should return 500 if no body is provided', () => {
-    const { sut } = makeSut();
-    const httpRequest = {};
-    const httpResponse = sut.route(httpRequest);
-    expect(httpResponse.statusCode).toBe(500);
-  });
+    const { sut } = makeSut()
+    const httpRequest = {}
+    const httpResponse = sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(500)
+  })
 
-  test('should call AuthUseCase with correct params', () => {
-    const { sut, authUseCase } = makeSut();
+  test('should call AuthUseCaseSpy with correct params', () => {
+    const { sut, authUseCaseSpy } = makeSut()
     const httpRequest = {
       body: {
         email: 'fake@email.com',
         password: 'fake_password',
       },
-    };
-    sut.route(httpRequest);
-    expect(authUseCase.email).toBe(httpRequest.body.email);
-  });
-});
+    }
+    sut.route(httpRequest)
+    expect(authUseCaseSpy.email).toBe(httpRequest.body.email)
+    expect(authUseCaseSpy.password).toBe(httpRequest.body.password)
+  })
+})
