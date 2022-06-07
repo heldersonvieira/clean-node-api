@@ -6,9 +6,9 @@
   "author": "Helderson Vieira <vieirahelder.fort@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "jest --watch",
+    "test": "jest",
     "test:staged": "jest --passWithNoTests --findRelatedTests",
-    "test:ci": "jest --covegare"
+    "test:ci": "jest --coverage"
   },
   "devDependencies": {
     "husky": "4.0.0-beta.5",
