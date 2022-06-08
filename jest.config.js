@@ -20,7 +20,7 @@ module.exports = {
   collectCoverage: true,
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
-  collectCoverageFrom: ['**/src/**/*.js'],
+  collectCoverageFrom: ['**/src/**/*.js', '!**/errors/**'],
 
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
@@ -31,7 +31,7 @@ module.exports = {
   // ],
 
   // Indicates which provider should be used to instrument code for coverage
-  coverageProvider: "v8",
+  // coverageProvider: "v8",
 
   // A list of reporter names that Jest uses when writing coverage reports
   // coverageReporters: [
@@ -145,6 +145,7 @@ module.exports = {
 
   // The test environment that will be used for testing
   // testEnvironment: "jest-environment-node",
+  testEnvironment: "node",
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
