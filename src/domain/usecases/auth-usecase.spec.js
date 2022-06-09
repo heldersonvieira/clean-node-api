@@ -1,22 +1,38 @@
-const { MissingParamError } = require('../../utils/errors');
+const { MissingParamError } = require('../../utils/errors')
 
-class AuthUseCase {
-  constructor(loadUserByEmailRepository) {
-    this.loadUserByEmailRepository = loadUserByEmailRepository
+const makeSut = () => {
+  const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
+  class AuthUseCase {
+    constructor(loadUserByEmailRepository) {
+      this.loadUserByEmailRepository = loadUserByEmailRepository
+    }
+
+    async auth({ email, password }) {
+      if (!email) throw new MissingParamError('email')
+      if (!password) throw new MissingParamError('password')
+
+      return await this.loadUserByEmailRepository.load(email)
+    }
   }
-
-  async auth({ email, password }) {
-    if (!email) throw new MissingParamError('email')
-    if (!password) throw new MissingParamError('password')
-
-    return await this.loadUserByEmailRepository.load(email)
+  const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
+  return {
+    sut,
+    loadUserByEmailRepositorySpy,
   }
 }
 
+const makeLoadUserByEmailRepository = () => {
+  class LoadUserByEmailRepositorySpy {
+    load(email) {
+      this.email = email
+    }
+  }
+  return new LoadUserByEmailRepositorySpy()
+}
 
 describe('Auth UseCase', () => {
   test('should return null if no email is provided', async () => {
-    const sut = new AuthUseCase()
+    const { sut } = makeSut()
     const attributes = {
       password: 'fake_password',
     }
@@ -25,7 +41,7 @@ describe('Auth UseCase', () => {
   })
 
   test('should return null if no passsword is provided', async () => {
-    const sut = new AuthUseCase()
+    const { sut } = makeSut()
     const attributes = {
       email: 'fake@email.com',
     }
@@ -34,18 +50,12 @@ describe('Auth UseCase', () => {
   })
 
   test('should call LoadUserByEmailRepository with coorect email', async () => {
-    class LoadUserByEmailRepositorySpy {
-      load(email) {
-        this.email = email
-      }
-    }
-    const loadUserByEmailRepository = new LoadUserByEmailRepositorySpy()
-    const sut = new AuthUseCase(loadUserByEmailRepository)
+    const { sut, loadUserByEmailRepositorySpy } = makeSut()
     const attributes = {
       email: 'fake@email.com',
       password: 'fake',
     }
     await sut.auth(attributes)
-    expect(loadUserByEmailRepository.email).toBe(attributes.email)
+    expect(loadUserByEmailRepositorySpy.email).toBe(attributes.email)
   })
 })
