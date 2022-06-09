@@ -32,7 +32,8 @@ const makeSut = () => {
       if (!this.loadUserByEmailRepository.load)
         throw new InvalidParamError('load')
 
-      return await this.loadUserByEmailRepository.load(email)
+      const user = await this.loadUserByEmailRepository.load(email)
+      return user || null
     }
   }
   const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
@@ -44,7 +45,7 @@ const makeSut = () => {
 
 const makeLoadUserByEmailRepository = () => {
   class LoadUserByEmailRepositorySpy {
-    load(email) {
+    async load(email) {
       this.email = email
     }
   }
@@ -52,7 +53,7 @@ const makeLoadUserByEmailRepository = () => {
 }
 
 describe('Auth UseCase', () => {
-  test('should return null if no email is provided', async () => {
+  test('should return throw if no email is provided', async () => {
     const { sut } = makeSut()
     const attributes = {
       password: 'fake_password',
@@ -61,7 +62,7 @@ describe('Auth UseCase', () => {
     await expect(promise).rejects.toThrow(new MissingParamError('email'))
   })
 
-  test('should return null if no passsword is provided', async () => {
+  test('should return throw if no passsword is provided', async () => {
     const { sut } = makeSut()
     const attributes = {
       email: 'fake@email.com',
@@ -102,5 +103,15 @@ describe('Auth UseCase', () => {
     }
     const promise = sut.auth(attributes)
     await expect(promise).rejects.toThrow(new InvalidParamError('load'))
+  })
+
+  test('should return null if LoadUserByEmailRepository return null', async () => {
+    const { sut } = makeSut()
+    const attributes = {
+      email: 'invalid@email.com',
+      password: 'any',
+    }
+    const accessToken = await sut.auth(attributes)
+    expect(accessToken).toBeNull()
   })
 })
