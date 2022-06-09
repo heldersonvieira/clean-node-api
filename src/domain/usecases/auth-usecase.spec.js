@@ -1,4 +1,21 @@
-const { MissingParamError } = require('../../utils/errors')
+const { MissingParamError, InvalidParamError } = require('../../utils/errors')
+
+class AuthUseCase {
+  constructor(loadUserByEmailRepository) {
+    this.loadUserByEmailRepository = loadUserByEmailRepository
+  }
+
+  async auth({ email, password }) {
+    if (!email) throw new MissingParamError('email')
+    if (!password) throw new MissingParamError('password')
+    if (!this.loadUserByEmailRepository)
+      throw new MissingParamError('loadUserByEmailRepository')
+    if (!this.loadUserByEmailRepository.load)
+      throw new InvalidParamError('load')
+
+    return await this.loadUserByEmailRepository.load(email)
+  }
+}
 
 const makeSut = () => {
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
@@ -10,6 +27,10 @@ const makeSut = () => {
     async auth({ email, password }) {
       if (!email) throw new MissingParamError('email')
       if (!password) throw new MissingParamError('password')
+      if (!this.loadUserByEmailRepository)
+        throw new MissingParamError('loadUserByEmailRepository')
+      if (!this.loadUserByEmailRepository.load)
+        throw new InvalidParamError('load')
 
       return await this.loadUserByEmailRepository.load(email)
     }
@@ -57,5 +78,29 @@ describe('Auth UseCase', () => {
     }
     await sut.auth(attributes)
     expect(loadUserByEmailRepositorySpy.email).toBe(attributes.email)
+  })
+
+  test('should throw if no LoadUserByEmailRepository is provided', async () => {
+    const sut = new AuthUseCase()
+    const attributes = {
+      email: 'fake@email.com',
+      password: 'fake',
+    }
+    const promise = sut.auth(attributes)
+    await expect(promise).rejects.toThrow(
+      new MissingParamError('loadUserByEmailRepository')
+    )
+  })
+
+  test('should throw if no LoadUserByEmailRepository has no load method', async () => {
+    class LoadUserByEmailRepositorySpy {}
+    const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
+    const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
+    const attributes = {
+      email: 'fake@email.com',
+      password: 'fake',
+    }
+    const promise = sut.auth(attributes)
+    await expect(promise).rejects.toThrow(new InvalidParamError('load'))
   })
 })
