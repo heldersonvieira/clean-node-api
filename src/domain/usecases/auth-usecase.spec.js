@@ -1,8 +1,9 @@
-const { MissingParamError, InvalidParamError } = require('../../utils/errors')
+const { MissingParamError } = require('../../utils/errors')
 const AuthUseCase = require('./auth-usecase');
 
 const makeSut = () => {
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
+  loadUserByEmailRepositorySpy.user = {}
   const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
   return {
     sut,
@@ -14,6 +15,7 @@ const makeLoadUserByEmailRepository = () => {
   class LoadUserByEmailRepositorySpy {
     async load(email) {
       this.email = email
+      return this.user
     }
   }
   return new LoadUserByEmailRepositorySpy()
@@ -55,9 +57,7 @@ describe('Auth UseCase', () => {
       password: 'fake',
     }
     const promise = sut.auth(attributes)
-    await expect(promise).rejects.toThrow(
-      new MissingParamError('loadUserByEmailRepository')
-    )
+    await expect(promise).rejects.toThrow()
   })
 
   test('should throw if no LoadUserByEmailRepository has no load method', async () => {
@@ -69,14 +69,25 @@ describe('Auth UseCase', () => {
       password: 'fake',
     }
     const promise = sut.auth(attributes)
-    await expect(promise).rejects.toThrow(new InvalidParamError('load'))
+    await expect(promise).rejects.toThrow()
   })
 
-  test('should return null if LoadUserByEmailRepository return null', async () => {
-    const { sut } = makeSut()
+  test('should return null if an invalid email is provided', async () => {
+    const { sut, loadUserByEmailRepositorySpy } = makeSut()
+    loadUserByEmailRepositorySpy.user = null
     const attributes = {
       email: 'invalid@email.com',
       password: 'any',
+    }
+    const accessToken = await sut.auth(attributes)
+    expect(accessToken).toBeNull()
+  })
+
+  test('should return null if an invalid password is provided', async () => {
+    const { sut } = makeSut()
+    const attributes = {
+      email: 'valid@email.com',
+      password: 'invalid',
     }
     const accessToken = await sut.auth(attributes)
     expect(accessToken).toBeNull()
