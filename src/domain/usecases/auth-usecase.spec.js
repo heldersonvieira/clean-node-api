@@ -2,14 +2,32 @@ const { MissingParamError } = require('../../utils/errors')
 const AuthUseCase = require('./auth-usecase');
 
 const makeSut = () => {
+  const tokenGeneratorSpy = makeTokenGenerator()
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
-  const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy)
+  const sut = new AuthUseCase(
+    loadUserByEmailRepositorySpy, 
+    encrypterSpy,
+    tokenGeneratorSpy
+  )
   return {
     sut,
     loadUserByEmailRepositorySpy,
-    encrypterSpy
+    encrypterSpy,
+    tokenGeneratorSpy
   }
+}
+
+const makeTokenGenerator = () => {
+  class TokenGeneratorSpy {
+    async generate(userId) {
+      this.userId = userId
+      return this.accessToken
+    }
+  }
+  const tokenGeneratorSpy = new TokenGeneratorSpy()
+  tokenGeneratorSpy.accessToken = 'any_token'
+  return tokenGeneratorSpy
 }
 
 const makeEncrypter = () => {
@@ -34,6 +52,7 @@ const makeLoadUserByEmailRepository = () => {
   }
   const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
   loadUserByEmailRepositorySpy.user = {
+    id: 'any_id',
     password: 'hashed_password'
   }
   return loadUserByEmailRepositorySpy
@@ -124,5 +143,15 @@ describe('Auth UseCase', () => {
       .toBe(
         loadUserByEmailRepositorySpy.user.password
       )
+  })
+
+  test('should call TokenGenerator with userId', async () => {
+    const { sut, loadUserByEmailRepositorySpy, tokenGeneratorSpy } = makeSut()
+    const attributes = {
+      email: 'valid@email.com',
+      password: 'any',
+    }
+    await sut.auth(attributes)
+    expect(tokenGeneratorSpy.userId).toBe(loadUserByEmailRepositorySpy.user.id)
   })
 })
