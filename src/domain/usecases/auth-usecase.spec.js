@@ -4,10 +4,6 @@ const AuthUseCase = require('./auth-usecase');
 const makeSut = () => {
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
-  loadUserByEmailRepositorySpy.user = {
-    password: 'hashed_password'
-  }
-
   const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy)
   return {
     sut,
@@ -21,9 +17,11 @@ const makeEncrypter = () => {
     async compare(password, hashedPassword) {
       this.password = password
       this.hashedPassword = hashedPassword
+      return this.isValid
     }
   }
   const encrypterSpy = new EncrypterSpy()
+  encrypterSpy.isValid = true
   return encrypterSpy
 }
 
@@ -35,6 +33,9 @@ const makeLoadUserByEmailRepository = () => {
     }
   }
   const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
+  loadUserByEmailRepositorySpy.user = {
+    password: 'hashed_password'
+  }
   return loadUserByEmailRepositorySpy
 }
 
@@ -101,7 +102,8 @@ describe('Auth UseCase', () => {
   })
 
   test('should return null if an invalid password is provided', async () => {
-    const { sut } = makeSut()
+    const { sut, encrypterSpy } = makeSut()
+    encrypterSpy.isValid = false
     const attributes = {
       email: 'valid@email.com',
       password: 'invalid',
