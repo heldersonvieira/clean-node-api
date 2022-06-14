@@ -2,13 +2,29 @@ const { MissingParamError } = require('../../utils/errors')
 const AuthUseCase = require('./auth-usecase');
 
 const makeSut = () => {
+  const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
-  loadUserByEmailRepositorySpy.user = {}
-  const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
+  loadUserByEmailRepositorySpy.user = {
+    password: 'hashed_password'
+  }
+
+  const sut = new AuthUseCase(loadUserByEmailRepositorySpy, encrypterSpy)
   return {
     sut,
     loadUserByEmailRepositorySpy,
+    encrypterSpy
   }
+}
+
+const makeEncrypter = () => {
+  class EncrypterSpy {
+    async compare(password, hashedPassword) {
+      this.password = password
+      this.hashedPassword = hashedPassword
+    }
+  }
+  const encrypterSpy = new EncrypterSpy()
+  return encrypterSpy
 }
 
 const makeLoadUserByEmailRepository = () => {
@@ -18,7 +34,8 @@ const makeLoadUserByEmailRepository = () => {
       return this.user
     }
   }
-  return new LoadUserByEmailRepositorySpy()
+  const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
+  return loadUserByEmailRepositorySpy
 }
 
 describe('Auth UseCase', () => {
@@ -31,7 +48,7 @@ describe('Auth UseCase', () => {
     await expect(promise).rejects.toThrow(new MissingParamError('email'))
   })
 
-  test('should return throw if no passsword is provided', async () => {
+  test('should return throw if no password is provided', async () => {
     const { sut } = makeSut()
     const attributes = {
       email: 'fake@email.com',
@@ -91,5 +108,19 @@ describe('Auth UseCase', () => {
     }
     const accessToken = await sut.auth(attributes)
     expect(accessToken).toBeNull()
+  })
+
+  test('should call Encrypter with correct values', async () => {
+    const { sut, loadUserByEmailRepositorySpy, encrypterSpy } = makeSut()
+    const attributes = {
+      email: 'valid@email.com',
+      password: 'any',
+    }
+    await sut.auth(attributes)
+    expect(encrypterSpy.password).toBe('any')
+    expect(encrypterSpy.hashedPassword)
+      .toBe(
+        loadUserByEmailRepositorySpy.user.password
+      )
   })
 })
