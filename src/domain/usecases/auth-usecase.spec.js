@@ -166,4 +166,14 @@ describe('Auth UseCase', () => {
     await expect(acessToken).toBe(tokenGeneratorSpy.accessToken)
     expect(acessToken).toBeTruthy()
   })
+
+  test('should throw if no dependency is provided', async () => {
+    const sut = new AuthUseCase()
+    const attributes = {
+      email: 'valid@email.com',
+      password: 'any',
+    }
+    const promise = sut.auth(attributes)
+    await expect(promise).rejects.toThrow()
+  })
 })
