@@ -1,20 +1,20 @@
 const { MissingParamError } = require('../../utils/errors')
-const AuthUseCase = require('./auth-usecase');
+const AuthUseCase = require('./auth-usecase')
 
 const makeSut = () => {
   const tokenGeneratorSpy = makeTokenGenerator()
   const encrypterSpy = makeEncrypter()
   const loadUserByEmailRepositorySpy = makeLoadUserByEmailRepository()
-  const sut = new AuthUseCase(
-    loadUserByEmailRepositorySpy, 
-    encrypterSpy,
-    tokenGeneratorSpy
-  )
+  const sut = new AuthUseCase({
+    loadUserByEmailRepository: loadUserByEmailRepositorySpy,
+    encrypter: encrypterSpy,
+    tokenGenerator: tokenGeneratorSpy,
+  })
   return {
     sut,
     loadUserByEmailRepositorySpy,
     encrypterSpy,
-    tokenGeneratorSpy
+    tokenGeneratorSpy,
   }
 }
 
@@ -53,7 +53,7 @@ const makeLoadUserByEmailRepository = () => {
   const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
   loadUserByEmailRepositorySpy.user = {
     id: 'any_id',
-    password: 'hashed_password'
+    password: 'hashed_password',
   }
   return loadUserByEmailRepositorySpy
 }
@@ -88,7 +88,7 @@ describe('Auth UseCase', () => {
   })
 
   test('should throw if no LoadUserByEmailRepository is provided', async () => {
-    const sut = new AuthUseCase()
+    const sut = new AuthUseCase({})
     const attributes = {
       email: 'fake@email.com',
       password: 'fake',
@@ -100,7 +100,9 @@ describe('Auth UseCase', () => {
   test('should throw if no LoadUserByEmailRepository has no load method', async () => {
     class LoadUserByEmailRepositorySpy {}
     const loadUserByEmailRepositorySpy = new LoadUserByEmailRepositorySpy()
-    const sut = new AuthUseCase(loadUserByEmailRepositorySpy)
+    const sut = new AuthUseCase({
+      loadUserByEmailRepository: loadUserByEmailRepositorySpy,
+    })
     const attributes = {
       email: 'fake@email.com',
       password: 'fake',
@@ -139,10 +141,9 @@ describe('Auth UseCase', () => {
     }
     await sut.auth(attributes)
     expect(encrypterSpy.password).toBe('any')
-    expect(encrypterSpy.hashedPassword)
-      .toBe(
-        loadUserByEmailRepositorySpy.user.password
-      )
+    expect(encrypterSpy.hashedPassword).toBe(
+      loadUserByEmailRepositorySpy.user.password
+    )
   })
 
   test('should call TokenGenerator with userId', async () => {
