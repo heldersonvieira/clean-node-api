@@ -257,7 +257,7 @@ describe('Auth UseCase', () => {
         loadUserByEmailRepository,
         encrypter,
         tokenGenerator,
-        updateAccessTokenRepository: invalid
+        updateAccessTokenRepository: invalid,
       })
     )
 
@@ -294,7 +294,7 @@ describe('Auth UseCase', () => {
         loadUserByEmailRepository,
         encrypter,
         tokenGenerator,
-        updateAccessTokenRepository: makeUpdateAccessTokenRepositoryWithError()
+        updateAccessTokenRepository: makeUpdateAccessTokenRepositoryWithError(),
       })
     )
 
