@@ -45,7 +45,7 @@ describe('Encrypter', () => {
     expect(hashedValue).toEqual(hash)
   })
 
-  test('should return value decrypted iquals input value', async () => {
+  test('should returns value decrypted iquals input value', async () => {
     const sut = makeSut()
     const decryptedValue = await sut.decrypt(hash)
     expect(decryptedValue).toEqual(value)
