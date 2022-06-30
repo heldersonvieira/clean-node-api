@@ -18,24 +18,28 @@ const iv = crypto
   .digest('hex')
   .substring(0, 16)
 
-const encrypt = (password) => {
-  const cipher = crypto.createCipheriv(ALGORITHM, key, iv)
-  let encrypted =
-    cipher.update(password, 'utf-8', 'base64') + cipher.final('base64')
-
-  return Buffer.from(encrypted).toString('base64')
+const encrypt = async (value) => {
+  return new Promise((resolve, reject) => {
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv)
+    let encrypted =
+      cipher.update(value, 'utf-8', 'base64') + cipher.final('base64')
+  
+    resolve(Buffer.from(encrypted).toString('base64'))
+  })
 }
 
-const decrypt = (password) => {
-  const chunks = Buffer.from(password, 'base64')
-  password = chunks.toString('utf-8')
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
-
-  return decipher.update(password, 'base64', 'utf-8') + decipher.final('utf-8')
+const decrypt = async (value) => {
+  return new Promise((resolve, reject) => {
+    const chunks = Buffer.from(value, 'base64')
+    value = chunks.toString('utf-8')
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
+  
+    resolve(decipher.update(value, 'base64', 'utf-8') + decipher.final('utf-8'))
+  })
 }
 
-const compare = (password, hash) => {
-  const valueEncrypted = encrypt(password)
+const compare = async (value, hash) => {
+  const valueEncrypted = await encrypt(value)
   return hash === valueEncrypted
 }
 

@@ -1,19 +1,30 @@
+const crypto = require('../utils/crypto')
+
 class Encrypter {
-  async compare(password, hashedPassword) {
-    return true
+  async compare(value, hash) {
+    const isValid = await crypto.compare(value, hash)
+    return isValid
   }
 }
 
 describe('Encrypter', () => {
+  let password
+  let hashedPassword
+
+  beforeAll(async () => {
+    password = 'any_password'
+    hashedPassword = await crypto.encrypt(password)
+  })
+
   test('should return true if crypto returns true', async () => {
     const sut = new Encrypter()
-    const isValid = await sut.compare('any_password', 'hashedPassword')
+    const isValid = await sut.compare(password, hashedPassword)
     expect(isValid).toBe(true)
   })
 
-  test.skip('should return false if crypto returns false', async () => {
+  test('should return false if crypto returns false', async () => {
     const sut = new Encrypter()
-    const isValid = await sut.compare('any_password', 'hashedPassword')
+    const isValid = await sut.compare(password, 'hashedPassword')
     expect(isValid).toBe(false)
   })
 })
