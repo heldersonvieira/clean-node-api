@@ -1,4 +1,4 @@
-const { MissingParamError } = require('../../utils/errors')
+const { MissingParamError } = require('../../shared/errors')
 const AuthUseCase = require('./auth-usecase')
 
 const makeSut = () => {
