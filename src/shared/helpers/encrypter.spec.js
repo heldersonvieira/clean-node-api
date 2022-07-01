@@ -1,4 +1,5 @@
 const { encrypt } = require('../utils/crypto')
+const { MissingParamError } = require('../errors/index');
 const Encrypter = require('./encrypter');
 
 const makeSut = () => {
@@ -36,5 +37,11 @@ describe('Encrypter', () => {
     const sut = makeSut()
     const decryptedValue = await sut.decrypt(hash)
     expect(decryptedValue).toEqual(value)
+  })
+
+  test('should throw if no params are provided', async () => {
+    const sut = makeSut()
+    const promise = sut.compare()
+    await expect(promise).rejects.toThrow(new MissingParamError('value'))
   })
 })
