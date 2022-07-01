@@ -1,20 +1,7 @@
-const crypto = require('../utils/crypto')
+const { encrypt } = require('../utils/crypto')
+const Encrypter = require('./encrypter');
 
 const makeSut = () => {
-  class Encrypter {
-    async compare(value, hash) {
-      const isValid = await crypto.compare(value, hash)
-      return isValid
-    }
-  
-    async encrypt(value) {
-      return await crypto.encrypt(value)
-    }
-  
-    async decrypt(value) {
-      return await crypto.decrypt(value)
-    }
-  }
   return new Encrypter()
 }
 
@@ -24,7 +11,7 @@ describe('Encrypter', () => {
 
   beforeAll(async () => {
     value = 'any_value'
-    hash = await crypto.encrypt(value)
+    hash = await encrypt(value)
   })
 
   test('should return true if crypto returns true', async () => {
