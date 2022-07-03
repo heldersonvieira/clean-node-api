@@ -6,7 +6,10 @@ class LoadUserByEmailRepository {
   }
 
   async load(email) {
-    const user = await this.userModel.findOne({ email })
+    const user = await this.userModel.findOne(
+      { email },
+      { projection: { password: 1 } }
+    )
     return user
   }
 }
@@ -23,8 +26,8 @@ describe('LoadUserByEmailRepository', () => {
     })
     db = await client.db()
 
-    makeSut = () => {
-      const userModel = db.collection('users')
+    makeSut = async () => {
+      const userModel = await db.collection('users')
       const sut = new LoadUserByEmailRepository(userModel)
       return {
         sut,
@@ -42,17 +45,26 @@ describe('LoadUserByEmailRepository', () => {
   })
 
   test('should return null if no user is found', async () => {
-    const { sut } = makeSut()
+    const { sut } = await makeSut()
     const user = await sut.load('invalid@email.com')
     expect(user).toBeNull()
   })
 
   test('should return an user if user is found', async () => {
-    const { sut, userModel } = makeSut()
+    const { sut, userModel } = await makeSut()
     await userModel.insertOne({
       email: 'valid@email.com',
+      name: 'any_name',
+      age: 35,
+      state: 'any_state',
+      password: 'hashed_passowrd',
     })
+    const createdUser = await userModel.findOne({ email: 'valid@email.com' })
+
     const user = await sut.load('valid@email.com')
-    expect(user.email).toBe('valid@email.com')
+    expect(user).toEqual({
+      _id: createdUser._id,
+      password: createdUser.password,
+    })
   })
 })
