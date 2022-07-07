@@ -14,6 +14,9 @@ module.exports = {
   },
 
   async getDatabase() {
+    if (!this.client || this.client.s.hasBeenClosed) {
+      await this.connect(this.uri, this.databaseName)
+    }
     return this.database
   },
 
