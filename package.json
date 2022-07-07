@@ -6,10 +6,10 @@
   "author": "Helderson Vieira <vieirahelder.fort@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "jest --colors --silent",
+    "test": "jest --colors",
     "test:unit": "yarn test -- --watch -c jest-unit-config.js",
     "test:int": "yarn test -- --watch -c jest-int-config.js",
-    "test:staged": "yarn test -- --passWithNoTests --findRelatedTests",
+    "test:staged": "yarn test -- --passWithNoTests --findRelatedTests --silent",
     "test:ci": "yarn test -- --coverage"
   },
   "devDependencies": {
