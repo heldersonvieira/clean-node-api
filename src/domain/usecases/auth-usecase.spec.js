@@ -90,7 +90,7 @@ const makeLoadUserByEmailRepositoryWithError = () => {
 
 const makeUpdateAccessTokenRepository = () => {
   class UpdateAccessTokenRepositorySpy {
-    async update({ userId, accessToken }) {
+    async update(userId, accessToken) {
       this.userId = userId
       this.accessToken = accessToken
     }
