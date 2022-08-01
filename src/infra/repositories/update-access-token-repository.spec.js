@@ -11,12 +11,18 @@ class UpdateAccessTokenRepository {
 }
 
 describe('UpdateAccessTokenRepository', () => {
+  let makeSut
   let client
   let database
 
   beforeAll(async () => {
     client = await MongoHelper.connect(process.env.MONGO_URL)
     database = await MongoHelper.getDatabase()
+    makeSut = async () => {
+      const userModel = await database.collection('users')
+      const sut = new UpdateAccessTokenRepository(userModel)
+      return { sut, userModel }
+    }
   })
 
   beforeEach(async () => {
@@ -28,8 +34,7 @@ describe('UpdateAccessTokenRepository', () => {
   })
 
   test('should update the user with the given accessToken', async () => {
-    const userModel = await database.collection('users')
-    const sut = new UpdateAccessTokenRepository(userModel)
+    const { sut, userModel } = await makeSut()
     const user = await userModel.insertOne({
       email: 'any@email.com',
       name: 'any_name',
