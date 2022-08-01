@@ -1,17 +1,6 @@
 const { MissingParamError } = require('../../shared/errors')
 const MongoHelper = require('../helpers/mongo-helper')
-
-class UpdateAccessTokenRepository {
-  constructor(userModel) {
-    if (!userModel) throw new Error()
-    this.userModel = userModel
-  }
-  async update(userId, accessToken) {
-    if (!userId) throw new MissingParamError('userId')
-    if (!accessToken) throw new MissingParamError('accessToken')
-    await this.userModel.updateOne({ _id: userId }, { $set: { accessToken } })
-  }
-}
+const UpdateAccessTokenRepository = require('./update-access-token-token-repository')
 
 describe('UpdateAccessTokenRepository', () => {
   let makeSut
