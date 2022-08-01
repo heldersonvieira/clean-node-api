@@ -2,6 +2,7 @@ const MongoHelper = require('../helpers/mongo-helper')
 
 class UpdateAccessTokenRepository {
   constructor(userModel) {
+    if (!userModel) throw new Error()
     this.userModel = userModel
   }
   async update(userId, accessToken) {
@@ -39,5 +40,9 @@ describe('UpdateAccessTokenRepository', () => {
     await sut.update(user.insertedId, 'valid_token')
     const updatedUser = await userModel.findOne({ _id: user.insertedId })
     expect(updatedUser.accessToken).toBe('valid_token')
+  })
+
+  test('should throw if no userModel is provided', () => {
+    expect(() => new UpdateAccessTokenRepository()).toThrow()
   })
 })
