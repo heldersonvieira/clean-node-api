@@ -1,4 +1,4 @@
-name: larn-github-actions
+name: standard
 run-name: ${{ github.actor }} is learning GitHub Actions
 on: [push]
 jobs:
