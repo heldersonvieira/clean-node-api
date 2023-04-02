@@ -11,7 +11,7 @@ Cenário(s) que ocorre(m) o(s) bug(s)
 - Adiciona módulo foo
 - Refatora módulo bar
 
-### CARD: [MTO-2004](https://tracker.casamagalhaes.com.br/youtrack/)
+### CARD: MTO-2004
 
 ### Checklist do Pull Request
 
